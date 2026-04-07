@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Countdown</title>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background: radial-gradient(circle at center, #0f172a, #020617);
+      font-family: Arial, sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      animation: rgbText 3s infinite linear;
+    }
+
+    @keyframes rgbText {
+      0% { color: red; }
+      33% { color: lime; }
+      66% { color: cyan; }
+      100% { color: red; }
+    }
+
+    #countdown {
+      font-size: 2.5rem;
+      background: rgba(255,255,255,0.05);
+      padding: 20px 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(0,255,255,0.2);
+    }
+
+    .hint {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+<h1>CIAO NOGEMA</h1>
+
+<div id="countdown"></div>
+
+<div class="hint">Clique pour activer le son</div>
+
+<audio id="music" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  const targetDate = new Date(2026, 4, 6, 18, 0, 0).getTime();
+
+  const timer = setInterval(() => {
+    const now = new Date().getTime();
+    const distance = targetDate - now;
+
+    if (distance < 0) {
+      document.getElementById("countdown").innerHTML = "Terminé";
+      clearInterval(timer);
+      return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((distance / (1000 * 60)) % 60);
+    const seconds = Math.floor((distance / 1000) % 60);
+
+    document.getElementById("countdown").innerHTML =
+      `${days}j ${hours}h ${minutes}m ${seconds}s`;
+  }, 1000);
+
+  // Activation du son au clic (important)
+  const music = document.getElementById("music");
+
+  document.addEventListener("click", () => {
+    music.play();
+  }, { once: true });
+</script>
+
+</body>
+</html>
