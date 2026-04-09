@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
-<link rel="icon" type="image/png" href="/gaming.png">
 <head>
   <meta charset="UTF-8">
   <title>Countdown</title>
-
+  <link rel="icon" type="image/png" href="/gaming.png">
   <style>
     body {
       margin: 0;
@@ -26,69 +25,341 @@
     }
 
     @keyframes rgbText {
-      0% { color: red; }
-      33% { color: lime; }
-      66% { color: cyan; }
+      0%   { color: red; }
+      33%  { color: lime; }
+      66%  { color: cyan; }
       100% { color: red; }
     }
 
     #countdown {
       font-size: 2.5rem;
+      color: white;
       background: rgba(255,255,255,0.05);
       padding: 20px 40px;
       border-radius: 20px;
       backdrop-filter: blur(10px);
-      box-shadow: 0 0 20px rgba(0,255,255,0.2);
+      border: 2px solid transparent;
+      animation: rgbBorder 3s infinite linear;
     }
 
-    .hint {
-      margin-top: 20px;
-      font-size: 0.9rem;
-      opacity: 0.6;
+    @keyframes rgbBorder {
+      0%   { border-color: red;  box-shadow: 0 0 16px 4px rgba(255,0,0,0.5),   0 0 40px 8px rgba(255,0,0,0.15); }
+      33%  { border-color: lime; box-shadow: 0 0 16px 4px rgba(0,255,0,0.5),   0 0 40px 8px rgba(0,255,0,0.15); }
+      66%  { border-color: cyan; box-shadow: 0 0 16px 4px rgba(0,255,255,0.5), 0 0 40px 8px rgba(0,255,255,0.15); }
+      100% { border-color: red;  box-shadow: 0 0 16px 4px rgba(255,0,0,0.5),   0 0 40px 8px rgba(255,0,0,0.15); }
+    }
+
+    /* Boutons */
+    .btn-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .icon-btn {
+      background: rgba(255,255,255,0.07);
+      border: 2px solid rgba(0,255,255,0.4);
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: box-shadow 0.2s, border-color 0.2s, background 0.2s;
+      box-shadow: 0 0 10px rgba(0,255,255,0.15);
+    }
+
+    .icon-btn:hover {
+      background: rgba(0,255,255,0.15);
+      border-color: cyan;
+      box-shadow: 0 0 22px rgba(0,255,255,0.5);
+    }
+
+    .icon-btn svg {
+      width: 28px;
+      height: 28px;
+      fill: cyan;
+      transition: fill 0.2s;
+    }
+
+    #soundBtn.muted svg { fill: #ff4444; }
+
+    /* Fenêtre Snake */
+    #snakeModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #0a0f1e;
+      border: 2px solid cyan;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0,255,255,0.4);
+      z-index: 100;
+      padding: 16px;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #snakeModal.open { display: flex; }
+
+    #snakeHeader {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #snakeTitle {
+      color: cyan;
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    #snakeScore {
+      color: white;
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    #snakeClose {
+      background: none;
+      border: none;
+      color: cyan;
+      font-size: 1.2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+    }
+
+    #snakeClose:hover { color: #ff4444; }
+
+    #snakeCanvas {
+      border: 1px solid rgba(0,255,255,0.3);
+      border-radius: 8px;
+      display: block;
+    }
+
+    #snakeMsg {
+      color: cyan;
+      font-size: 0.8rem;
+      opacity: 0.7;
+      letter-spacing: 1px;
     }
   </style>
 </head>
 <body>
 
-<h1>CIAO NOGEMA</h1>
+  <h1>CIAO NOGEMA</h1>
+  <div id="countdown"></div>
 
-<div id="countdown"></div>
+  <div class="btn-row">
 
-<div class="hint">Activer le son gaming</div>
+    <!-- Bouton Son -->
+    <button class="icon-btn" id="soundBtn" title="Activer le son">
+      <svg id="iconOn" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+      </svg>
+      <svg id="iconOff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
+        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+      </svg>
+    </button>
 
-<audio id="music" loop>
-  <source src="ciao_le_rat.mp3" type="audio/mpeg">
-</audio>
+    <!-- Bouton Manette -->
+    <button class="icon-btn" id="gameBtn" title="Jouer à Snake">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 6H3a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+      </svg>
+    </button>
 
-<script>
-  const targetDate = new Date(2026, 4, 6, 18, 0, 0).getTime();
+  </div>
 
-  const timer = setInterval(() => {
-    const now = new Date().getTime();
-    const distance = targetDate - now;
+  <!-- Fenêtre Snake -->
+  <div id="snakeModal">
+    <div id="snakeHeader">
+      <span id="snakeTitle">🐍 SNAKE GAMING</span>
+      <span id="snakeScore">Score : 0</span>
+      <button id="snakeClose">✕</button>
+    </div>
+    <canvas id="snakeCanvas" width="300" height="300"></canvas>
+    <div id="snakeMsg">ZQSD pour jouer — Espace pour rejouer</div>
+  </div>
 
-    if (distance < 0) {
-      document.getElementById("countdown").innerHTML = "Terminé";
-      clearInterval(timer);
-      return;
+  <audio id="music" loop>
+    <source src="ciao_le_rat.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    /* ── Countdown ── */
+    const targetDate = new Date(2026, 4, 6, 18, 0, 0).getTime();
+    const timer = setInterval(() => {
+      const distance = targetDate - Date.now();
+      if (distance < 0) {
+        document.getElementById("countdown").innerHTML = "Terminé";
+        clearInterval(timer); return;
+      }
+      const d = Math.floor(distance / 86400000);
+      const h = Math.floor((distance / 3600000) % 24);
+      const m = Math.floor((distance / 60000) % 60);
+      const s = Math.floor((distance / 1000) % 60);
+      document.getElementById("countdown").innerHTML = `${d}j ${h}h ${m}m ${s}s`;
+    }, 1000);
+
+    /* ── Son ── */
+    const music   = document.getElementById("music");
+    const soundBtn = document.getElementById("soundBtn");
+    const iconOn  = document.getElementById("iconOn");
+    const iconOff = document.getElementById("iconOff");
+    let playing = false;
+
+    soundBtn.addEventListener("click", () => {
+      if (!playing) {
+        music.play(); playing = true;
+        iconOn.style.display = "none"; iconOff.style.display = "block";
+        soundBtn.classList.add("muted"); soundBtn.title = "Couper le son";
+      } else {
+        music.pause(); playing = false;
+        iconOn.style.display = "block"; iconOff.style.display = "none";
+        soundBtn.classList.remove("muted"); soundBtn.title = "Activer le son";
+      }
+    });
+
+    /* ── Snake ── */
+    const modal     = document.getElementById("snakeModal");
+    const gameBtn   = document.getElementById("gameBtn");
+    const closeBtn  = document.getElementById("snakeClose");
+    const canvas    = document.getElementById("snakeCanvas");
+    const ctx       = canvas.getContext("2d");
+    const scoreEl   = document.getElementById("snakeScore");
+    const msgEl     = document.getElementById("snakeMsg");
+
+    const COLS = 20, ROWS = 20;
+    const CELL = canvas.width / COLS;
+
+    let snake, dir, nextDir, food, score, loop, alive;
+
+    function initSnake() {
+      snake   = [{x:10, y:10},{x:9,y:10},{x:8,y:10}];
+      dir     = {x:1, y:0};
+      nextDir = {x:1, y:0};
+      score   = 0;
+      alive   = true;
+      scoreEl.textContent = "Score : 0";
+      msgEl.textContent   = "ZQSD pour jouer — Espace pour rejouer";
+      placeFood();
+      clearInterval(loop);
+      loop = setInterval(step, 130);
     }
 
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((distance / (1000 * 60)) % 60);
-    const seconds = Math.floor((distance / 1000) % 60);
+    function placeFood() {
+      do {
+        food = {x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS)};
+      } while (snake.some(s => s.x===food.x && s.y===food.y));
+    }
 
-    document.getElementById("countdown").innerHTML =
-      `${days}j ${hours}h ${minutes}m ${seconds}s`;
-  }, 1000);
+    function step() {
+      if (!alive) return;
+      dir = {...nextDir};
+      const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
 
-  // Activation du son au clic (important)
-  const music = document.getElementById("music");
+      if (head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS||snake.some(s=>s.x===head.x&&s.y===head.y)) {
+        alive = false;
+        clearInterval(loop);
+        msgEl.textContent = "💀 Game Over — Espace pour rejouer";
+        draw(); return;
+      }
 
-  document.addEventListener("click", () => {
-    music.play();
-  }, { once: true });
-</script>
+      snake.unshift(head);
+      if (head.x===food.x && head.y===food.y) {
+        score++;
+        scoreEl.textContent = "Score : " + score;
+        placeFood();
+      } else {
+        snake.pop();
+      }
+      draw();
+    }
+
+    function draw() {
+      ctx.fillStyle = "#0a0f1e";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Grille
+      ctx.strokeStyle = "rgba(0,255,255,0.05)";
+      ctx.lineWidth = 0.5;
+      for (let i=0; i<=COLS; i++) {
+        ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,canvas.height); ctx.stroke();
+      }
+      for (let j=0; j<=ROWS; j++) {
+        ctx.beginPath(); ctx.moveTo(0,j*CELL); ctx.lineTo(canvas.width,j*CELL); ctx.stroke();
+      }
+
+      // Nourriture
+      ctx.fillStyle = "#ff4444";
+      ctx.shadowColor = "#ff4444";
+      ctx.shadowBlur = 10;
+      ctx.fillRect(food.x*CELL+1, food.y*CELL+1, CELL-2, CELL-2);
+      ctx.shadowBlur = 0;
+
+      // Serpent
+      snake.forEach((seg, i) => {
+        const ratio = i / snake.length;
+        if (i === 0) {
+          ctx.fillStyle = "cyan";
+          ctx.shadowColor = "cyan";
+          ctx.shadowBlur = 12;
+        } else {
+          const r = Math.round(0 + ratio*0);
+          const g = Math.round(255 - ratio*100);
+          const b = Math.round(255 - ratio*50);
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
+          ctx.shadowColor = "transparent";
+          ctx.shadowBlur = 0;
+        }
+        ctx.fillRect(seg.x*CELL+1, seg.y*CELL+1, CELL-2, CELL-2);
+      });
+      ctx.shadowBlur = 0;
+
+      // Game over overlay
+      if (!alive) {
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "cyan";
+        ctx.font = "bold 22px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2 - 10);
+        ctx.font = "14px Arial";
+        ctx.fillStyle = "white";
+        ctx.fillText("Score : " + score, canvas.width/2, canvas.height/2 + 18);
+      }
+    }
+
+    // Touches ZQSD + Espace
+    document.addEventListener("keydown", e => {
+      if (!modal.classList.contains("open")) return;
+      switch(e.key.toLowerCase()) {
+        case "z": if (dir.y!==1)  nextDir={x:0,y:-1}; break;
+        case "s": if (dir.y!==-1) nextDir={x:0,y:1};  break;
+        case "q": if (dir.x!==1)  nextDir={x:-1,y:0}; break;
+        case "d": if (dir.x!==-1) nextDir={x:1,y:0};  break;
+        case " ": if (!alive) initSnake(); break;
+      }
+      if(["z","s","q","d"," "].includes(e.key.toLowerCase())) e.preventDefault();
+    });
+
+    gameBtn.addEventListener("click", () => {
+      modal.classList.add("open");
+      initSnake();
+    });
+
+    closeBtn.addEventListener("click", () => {
+      modal.classList.remove("open");
+      clearInterval(loop);
+    });
+  </script>
 
 </body>
 </html>
