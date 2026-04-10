@@ -149,6 +149,61 @@
       opacity: 0.7;
       letter-spacing: 1px;
     }
+
+    /* Fenêtre Vidéo */
+    #videoModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #0a0f1e;
+      border: 2px solid cyan;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0,255,255,0.4);
+      z-index: 100;
+      padding: 16px;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #videoModal.open { display: flex; }
+
+    #videoHeader {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #videoTitle {
+      color: cyan;
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    #videoClose {
+      background: none;
+      border: none;
+      color: cyan;
+      font-size: 1.2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+    }
+
+    #videoClose:hover { color: #ff4444; }
+
+    #videoPlayer {
+      border: 1px solid rgba(0,255,255,0.3);
+      border-radius: 8px;
+      display: block;
+      max-width: 480px;
+      width: 100%;
+      outline: none;
+    }
   </style>
 </head>
 <body>
@@ -175,6 +230,13 @@
       </svg>
     </button>
 
+    <!-- Bouton Vidéo -->
+    <button class="icon-btn" id="videoBtn" title="Regarder l'édit gaming">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2h10l4 4v2l4-2v12l-4-2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v14h12V7.83L12.17 4H4zm3 3l6 4-6 4V7z"/>
+      </svg>
+    </button>
+
   </div>
 
   <!-- Fenêtre Snake -->
@@ -186,6 +248,17 @@
     </div>
     <canvas id="snakeCanvas" width="300" height="300"></canvas>
     <div id="snakeMsg">ZQSD pour jouer — Espace pour rejouer</div>
+  </div>
+
+  <!-- Fenêtre Vidéo -->
+  <div id="videoModal">
+    <div id="videoHeader">
+      <span id="videoTitle">🎬 EDIT GAMING</span>
+      <button id="videoClose">✕</button>
+    </div>
+    <video id="videoPlayer" width="480" controls autoplay>
+      <source src="edit.mp4" type="video/mp4">
+    </video>
   </div>
 
   <audio id="music" loop>
@@ -209,36 +282,62 @@
     }, 1000);
 
     /* ── Son ── */
-    const music   = document.getElementById("music");
+    const music    = document.getElementById("music");
     const soundBtn = document.getElementById("soundBtn");
-    const iconOn  = document.getElementById("iconOn");
-    const iconOff = document.getElementById("iconOff");
+    const iconOn   = document.getElementById("iconOn");
+    const iconOff  = document.getElementById("iconOff");
     let playing = false;
 
+    function pauseMusic() {
+      if (playing) {
+        music.pause();
+        playing = false;
+        iconOn.style.display  = "none";
+        iconOff.style.display = "block";
+        soundBtn.classList.add("muted");
+        soundBtn.title = "Activer le son";
+      }
+    }
+
     soundBtn.addEventListener("click", () => {
-  if (!playing) {
-    music.play(); playing = true;
-    iconOn.style.display = "block";   // ✅ icône SON visible quand ça joue
-    iconOff.style.display = "none";
-    soundBtn.classList.remove("muted");
-    soundBtn.title = "Couper le son";
-  } else {
-    music.pause(); playing = false;
-    iconOn.style.display = "none";    // ✅ icône MUTE visible quand c'est coupé
-    iconOff.style.display = "block";
-    soundBtn.classList.add("muted");
-    soundBtn.title = "Activer le son";
-  }
-});
+      if (!playing) {
+        music.play(); playing = true;
+        iconOn.style.display  = "block";
+        iconOff.style.display = "none";
+        soundBtn.classList.remove("muted");
+        soundBtn.title = "Couper le son";
+      } else {
+        pauseMusic();
+      }
+    });
+
+    /* ── Vidéo ── */
+    const videoModal  = document.getElementById("videoModal");
+    const videoBtn    = document.getElementById("videoBtn");
+    const videoClose  = document.getElementById("videoClose");
+    const videoPlayer = document.getElementById("videoPlayer");
+
+    videoBtn.addEventListener("click", () => {
+      pauseMusic();                        // coupe la musique de fond
+      videoModal.classList.add("open");
+      videoPlayer.currentTime = 0;
+      videoPlayer.play();
+    });
+
+    videoClose.addEventListener("click", () => {
+      videoModal.classList.remove("open");
+      videoPlayer.pause();
+      videoPlayer.currentTime = 0;
+    });
 
     /* ── Snake ── */
-    const modal     = document.getElementById("snakeModal");
-    const gameBtn   = document.getElementById("gameBtn");
-    const closeBtn  = document.getElementById("snakeClose");
-    const canvas    = document.getElementById("snakeCanvas");
-    const ctx       = canvas.getContext("2d");
-    const scoreEl   = document.getElementById("snakeScore");
-    const msgEl     = document.getElementById("snakeMsg");
+    const modal    = document.getElementById("snakeModal");
+    const gameBtn  = document.getElementById("gameBtn");
+    const closeBtn = document.getElementById("snakeClose");
+    const canvas   = document.getElementById("snakeCanvas");
+    const ctx      = canvas.getContext("2d");
+    const scoreEl  = document.getElementById("snakeScore");
+    const msgEl    = document.getElementById("snakeMsg");
 
     const COLS = 20, ROWS = 20;
     const CELL = canvas.width / COLS;
@@ -291,7 +390,6 @@
       ctx.fillStyle = "#0a0f1e";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Grille
       ctx.strokeStyle = "rgba(0,255,255,0.05)";
       ctx.lineWidth = 0.5;
       for (let i=0; i<=COLS; i++) {
@@ -301,14 +399,12 @@
         ctx.beginPath(); ctx.moveTo(0,j*CELL); ctx.lineTo(canvas.width,j*CELL); ctx.stroke();
       }
 
-      // Nourriture
       ctx.fillStyle = "#ff4444";
       ctx.shadowColor = "#ff4444";
       ctx.shadowBlur = 10;
       ctx.fillRect(food.x*CELL+1, food.y*CELL+1, CELL-2, CELL-2);
       ctx.shadowBlur = 0;
 
-      // Serpent
       snake.forEach((seg, i) => {
         const ratio = i / snake.length;
         if (i === 0) {
@@ -316,10 +412,9 @@
           ctx.shadowColor = "cyan";
           ctx.shadowBlur = 12;
         } else {
-          const r = Math.round(0 + ratio*0);
           const g = Math.round(255 - ratio*100);
           const b = Math.round(255 - ratio*50);
-          ctx.fillStyle = `rgb(${r},${g},${b})`;
+          ctx.fillStyle = `rgb(0,${g},${b})`;
           ctx.shadowColor = "transparent";
           ctx.shadowBlur = 0;
         }
@@ -327,7 +422,6 @@
       });
       ctx.shadowBlur = 0;
 
-      // Game over overlay
       if (!alive) {
         ctx.fillStyle = "rgba(0,0,0,0.55)";
         ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -341,7 +435,6 @@
       }
     }
 
-    // Touches ZQSD + Espace
     document.addEventListener("keydown", e => {
       if (!modal.classList.contains("open")) return;
       switch(e.key.toLowerCase()) {
