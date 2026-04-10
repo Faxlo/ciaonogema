@@ -150,6 +150,77 @@
       letter-spacing: 1px;
     }
 
+    #replayBtn {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,255,255,0.08);
+      border: 2px solid cyan;
+      border-radius: 30px;
+      color: cyan;
+      font-size: 0.95rem;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      letter-spacing: 1px;
+      padding: 8px 22px;
+      cursor: pointer;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 0 10px rgba(0,255,255,0.2);
+    }
+
+    #replayBtn:hover, #replayBtn:active {
+      background: rgba(0,255,255,0.22);
+      box-shadow: 0 0 22px rgba(0,255,255,0.5);
+    }
+
+    #replayBtn svg {
+      width: 20px;
+      height: 20px;
+      fill: cyan;
+    }
+
+    /* D-pad mobile — masqué par défaut (desktop) */
+    #dpad {
+      display: none;
+      grid-template-columns: repeat(3, 52px);
+      grid-template-rows: repeat(3, 52px);
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    /* Affiché uniquement sur écran tactile */
+    @media (hover: none) and (pointer: coarse) {
+      #dpad { display: grid; }
+    }
+
+    .dpad-btn {
+      background: rgba(255,255,255,0.07);
+      border: 2px solid rgba(0,255,255,0.4);
+      border-radius: 10px;
+      color: cyan;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: background 0.1s, box-shadow 0.1s;
+    }
+
+    .dpad-btn:active {
+      background: rgba(0,255,255,0.25);
+      box-shadow: 0 0 14px rgba(0,255,255,0.5);
+    }
+
+    .dpad-empty {
+      /* cellule vide aux coins */
+    }
+
     /* Fenêtre Vidéo */
     #videoModal {
       display: none;
@@ -231,7 +302,7 @@
     </button>
 
     <!-- Bouton Vidéo -->
-    <button class="icon-btn" id="videoBtn" title="Regarder l'édit gaming">
+    <button class="icon-btn" id="videoBtn" title="Regarder l'edit gaming">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M4 2h10l4 4v2l4-2v12l-4-2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v14h12V7.83L12.17 4H4zm3 3l6 4-6 4V7z"/>
       </svg>
@@ -247,7 +318,27 @@
       <button id="snakeClose">✕</button>
     </div>
     <canvas id="snakeCanvas" width="300" height="300"></canvas>
-    <div id="snakeMsg">ZQSD pour jouer — Espace pour rejouer</div>
+    <div id="snakeMsg">ZQSD / flèches pour jouer</div>
+
+    <button id="replayBtn" aria-label="Rejouer">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+      </svg>
+      REJOUER
+    </button>
+
+    <!-- D-pad tactile (visible uniquement sur mobile/tablette) -->
+    <div id="dpad">
+      <div class="dpad-empty"></div>
+      <button class="dpad-btn" id="dUp"    aria-label="Haut">▲</button>
+      <div class="dpad-empty"></div>
+      <button class="dpad-btn" id="dLeft"  aria-label="Gauche">◀</button>
+      <div class="dpad-empty"></div>
+      <button class="dpad-btn" id="dRight" aria-label="Droite">▶</button>
+      <div class="dpad-empty"></div>
+      <button class="dpad-btn" id="dDown"  aria-label="Bas">▼</button>
+      <div class="dpad-empty"></div>
+    </div>
   </div>
 
   <!-- Fenêtre Vidéo -->
@@ -257,7 +348,7 @@
       <button id="videoClose">✕</button>
     </div>
     <video id="videoPlayer" width="480" controls autoplay>
-      <source src="edit.mp4" type="video/mp4">
+      <source src="video.mp4" type="video/mp4">
     </video>
   </div>
 
@@ -344,18 +435,24 @@
 
     let snake, dir, nextDir, food, score, loop, alive;
 
+    const replayBtn = document.getElementById("replayBtn");
+
     function initSnake() {
       snake   = [{x:10, y:10},{x:9,y:10},{x:8,y:10}];
       dir     = {x:1, y:0};
       nextDir = {x:1, y:0};
       score   = 0;
       alive   = true;
-      scoreEl.textContent = "Score : 0";
-      msgEl.textContent   = "ZQSD pour jouer — Espace pour rejouer";
+      scoreEl.textContent      = "Score : 0";
+      msgEl.textContent        = "ZQSD / ↑↓←→ pour jouer";
+      replayBtn.style.display  = "none";
       placeFood();
       clearInterval(loop);
       loop = setInterval(step, 130);
     }
+
+    replayBtn.addEventListener("click",      () => { if (!alive) initSnake(); });
+    replayBtn.addEventListener("touchstart", e  => { e.preventDefault(); if (!alive) initSnake(); }, { passive: false });
 
     function placeFood() {
       do {
@@ -371,7 +468,8 @@
       if (head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS||snake.some(s=>s.x===head.x&&s.y===head.y)) {
         alive = false;
         clearInterval(loop);
-        msgEl.textContent = "💀 Game Over — Espace pour rejouer";
+        msgEl.textContent       = "💀 GAME OVER";
+        replayBtn.style.display = "flex";
         draw(); return;
       }
 
@@ -435,17 +533,38 @@
       }
     }
 
+    // Fonction centrale de direction (clavier + D-pad)
+    function handleDir(input) {
+      switch(input) {
+        case "up":    if (dir.y!==1)  nextDir={x:0,y:-1}; break;
+        case "down":  if (dir.y!==-1) nextDir={x:0,y:1};  break;
+        case "left":  if (dir.x!==1)  nextDir={x:-1,y:0}; break;
+        case "right": if (dir.x!==-1) nextDir={x:1,y:0};  break;
+      }
+    }
+
+    // Clavier : ZQSD + touches fléchées
     document.addEventListener("keydown", e => {
       if (!modal.classList.contains("open")) return;
-      switch(e.key.toLowerCase()) {
-        case "z": if (dir.y!==1)  nextDir={x:0,y:-1}; break;
-        case "s": if (dir.y!==-1) nextDir={x:0,y:1};  break;
-        case "q": if (dir.x!==1)  nextDir={x:-1,y:0}; break;
-        case "d": if (dir.x!==-1) nextDir={x:1,y:0};  break;
-        case " ": if (!alive) initSnake(); break;
+      switch(e.key) {
+        case "z": case "Z": case "ArrowUp":    handleDir("up");    break;
+        case "s": case "S": case "ArrowDown":  handleDir("down");  break;
+        case "q": case "Q": case "ArrowLeft":  handleDir("left");  break;
+        case "d": case "D": case "ArrowRight": handleDir("right"); break;
       }
-      if(["z","s","q","d"," "].includes(e.key.toLowerCase())) e.preventDefault();
+      if(["z","s","q","d","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
     });
+
+    // D-pad tactile
+    function bindDpad(id, direction) {
+      const btn = document.getElementById(id);
+      btn.addEventListener("touchstart", e => { e.preventDefault(); handleDir(direction); }, { passive: false });
+      btn.addEventListener("mousedown",  e => { e.preventDefault(); handleDir(direction); });
+    }
+    bindDpad("dUp",    "up");
+    bindDpad("dDown",  "down");
+    bindDpad("dLeft",  "left");
+    bindDpad("dRight", "right");
 
     gameBtn.addEventListener("click", () => {
       modal.classList.add("open");
