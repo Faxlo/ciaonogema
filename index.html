@@ -1,1356 +1,319 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Countdown</title>
-  <link rel="icon" type="image/png" href="/gaming.png">
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      background: radial-gradient(circle at center, #0f172a, #020617);
-      font-family: Arial, sans-serif;
-      color: white;
-      overflow: hidden;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compte à rebours — GTA VI</title>
+<meta name="description" content="Compte à rebours avant la sortie de Grand Theft Auto VI, le 19 novembre 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#ff3d7f;
+    --orange:#ff9e57;
+    --cyan:#29e8e0;
+    --text:#fdf3ff;
+    --text-dim:#c9b3e0;
+    --panel-bg:rgba(12,6,22,.55);
+    --panel-border:rgba(255,255,255,.16);
+  }
 
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 20px;
-      animation: rgbText 3s infinite linear;
-    }
+  *{margin:0;padding:0;box-sizing:border-box;}
 
-    @keyframes rgbText {
-      0%   { color: red; }
-      33%  { color: lime; }
-      66%  { color: cyan; }
-      100% { color: red; }
-    }
+  html,body{
+    height:100%;
+    background:#0c0616;
+    color:var(--text);
+    font-family:'Space Mono', monospace;
+  }
 
-    #countdown {
-      font-size: 2.5rem;
-      color: white;
-      background: rgba(255,255,255,0.05);
-      padding: 20px 40px;
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-      border: 2px solid transparent;
-      animation: rgbBorder 3s infinite linear;
-    }
+  body{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
 
-    @keyframes rgbBorder {
-      0%   { border-color: red;  box-shadow: 0 0 16px 4px rgba(255,0,0,0.5),   0 0 40px 8px rgba(255,0,0,0.15); }
-      33%  { border-color: lime; box-shadow: 0 0 16px 4px rgba(0,255,0,0.5),   0 0 40px 8px rgba(0,255,0,0.15); }
-      66%  { border-color: cyan; box-shadow: 0 0 16px 4px rgba(0,255,255,0.5), 0 0 40px 8px rgba(0,255,255,0.15); }
-      100% { border-color: red;  box-shadow: 0 0 16px 4px rgba(255,0,0,0.5),   0 0 40px 8px rgba(255,0,0,0.15); }
-    }
+  /* ---- Background artwork ---- */
+  .bg{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background-image:url('assets/gta6-bg.jpg');
+    background-size:cover;
+    background-position:center top;
+  }
 
-    .btn-row {
-      display: flex;
-      gap: 16px;
-      margin-top: 28px;
-    }
+  .bg-overlay{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    background:
+      radial-gradient(ellipse at center, rgba(8,4,16,0) 35%, rgba(8,4,16,.55) 100%),
+      linear-gradient(180deg,
+        rgba(8,4,16,.35) 0%,
+        rgba(8,4,16,.25) 40%,
+        rgba(8,4,16,.72) 78%,
+        rgba(8,4,16,.94) 100%);
+  }
 
-    .icon-btn {
-      background: rgba(255,255,255,0.07);
-      border: 2px solid rgba(0,255,255,0.4);
-      border-radius: 50%;
-      width: 56px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: box-shadow 0.2s, border-color 0.2s, background 0.2s;
-      box-shadow: 0 0 10px rgba(0,255,255,0.15);
-    }
+  /* ---- Content ---- */
+  main{
+    position:relative;
+    z-index:5;
+    flex:1;
+    width:100%;
+    max-width:900px;
+    margin:0 auto;
+    padding:5vh 24px 3vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    justify-content:flex-end;
+  }
 
-    .icon-btn:hover {
-      background: rgba(0,255,255,0.15);
-      border-color: cyan;
-      box-shadow: 0 0 22px rgba(0,255,255,0.5);
-    }
+  .title{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:clamp(2.4rem, 7.5vw, 5.4rem);
+    letter-spacing:.06em;
+    line-height:1;
+    margin-bottom:5vh;
+    background:linear-gradient(100deg, #ffd27a, #ff9e57, #ff3d7f, #ff6fa8, #ff9e57, #ffd27a);
+    background-size:400% 400%;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    animation:gradient-flow 7s ease-in-out infinite, glow-flow 7s ease-in-out infinite;
+  }
 
-    .icon-btn svg {
-      width: 28px;
-      height: 28px;
-      fill: cyan;
-      transition: fill 0.2s;
-    }
+  @keyframes gradient-flow{
+    0%{ background-position:0% 50%; }
+    50%{ background-position:100% 50%; }
+    100%{ background-position:0% 50%; }
+  }
 
-    #soundBtn.muted svg { fill: #ff4444; }
+  @keyframes glow-flow{
+    0%{ filter:drop-shadow(0 0 22px rgba(255,158,87,.55)); }
+    50%{ filter:drop-shadow(0 0 26px rgba(255,61,127,.6)); }
+    100%{ filter:drop-shadow(0 0 22px rgba(255,158,87,.55)); }
+  }
 
-    /* ── Modal générique ── */
-    .game-modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #0a0f1e;
-      border: 2px solid cyan;
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(0,255,255,0.4);
-      z-index: 100;
-      padding: 16px;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-    .game-modal.open { display: flex; }
+  /* ---- Countdown ---- */
+  .countdown{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:clamp(10px, 2.4vw, 26px);
+    width:100%;
+    max-width:640px;
+  }
 
-    .modal-header {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+  .unit{
+    background:var(--panel-bg);
+    border:1px solid rgba(255,158,87,.4);
+    border-radius:14px;
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    padding:clamp(14px,3vw,24px) 6px;
+    animation:border-flow 7s ease-in-out infinite;
+  }
 
-    .modal-title {
-      color: cyan;
-      font-size: 1rem;
-      font-weight: bold;
-      letter-spacing: 2px;
+  @keyframes border-flow{
+    0%{
+      border-color:rgba(255,158,87,.45);
+      box-shadow:0 0 18px rgba(255,158,87,.18), inset 0 0 20px rgba(255,158,87,.06);
     }
+    50%{
+      border-color:rgba(255,61,127,.55);
+      box-shadow:0 0 22px rgba(255,61,127,.25), inset 0 0 20px rgba(255,61,127,.08);
+    }
+    100%{
+      border-color:rgba(255,158,87,.45);
+      box-shadow:0 0 18px rgba(255,158,87,.18), inset 0 0 20px rgba(255,158,87,.06);
+    }
+  }
 
-    .modal-score {
-      color: white;
-      font-size: 0.85rem;
-      opacity: 0.8;
-    }
+  .unit .num{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:clamp(2.1rem, 7.5vw, 3.8rem);
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+    background:linear-gradient(100deg, #ffd27a, #ff9e57, #ff3d7f, #ff6fa8, #ff9e57, #ffd27a);
+    background-size:400% 400%;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    animation:gradient-flow 7s ease-in-out infinite;
+  }
 
-    .modal-close {
-      background: none;
-      border: none;
-      color: cyan;
-      font-size: 1.2rem;
-      cursor: pointer;
-      line-height: 1;
-      padding: 0 4px;
-    }
-    .modal-close:hover { color: #ff4444; }
+  .unit .label{
+    margin-top:.6rem;
+    font-size:clamp(.55rem,1.6vw,.72rem);
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+  }
 
-    /* ── Menu choix de jeu ── */
-    #gameMenuModal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #0a0f1e;
-      border: 2px solid cyan;
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(0,255,255,0.4);
-      z-index: 100;
-      padding: 20px 28px;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-    #gameMenuModal.open { display: flex; }
+  .done-message{
+    display:none;
+    font-family:'Bebas Neue', sans-serif;
+    font-size:clamp(1.8rem, 5vw, 3rem);
+    background:linear-gradient(100deg, #ffd27a, #ff9e57, #ff3d7f, #ff6fa8, #ff9e57, #ffd27a);
+    background-size:400% 400%;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    animation:gradient-flow 7s ease-in-out infinite;
+  }
 
-    #gameMenuTitle {
-      color: cyan;
-      font-size: 1rem;
-      font-weight: bold;
-      letter-spacing: 2px;
-    }
+  /* ---- CTA buttons ---- */
+  .cta-row{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:clamp(10px,2vw,18px);
+    margin-top:4.5vh;
+  }
 
-    .game-choice-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-      max-width: 320px;
-    }
+  .cta{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:.9em 2em;
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:.78rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    text-decoration:none;
+    border-radius:999px;
+    border:1.5px solid rgba(255,158,87,.55);
+    background:rgba(12,6,22,.5);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    overflow:hidden;
+    isolation:isolate;
+    transition:color .35s ease, border-color .35s ease, transform .3s ease;
+    animation:border-flow 7s ease-in-out infinite;
+    background-image:linear-gradient(100deg, #ffd27a, #ff9e57, #ff3d7f, #ff6fa8, #ff9e57, #ffd27a), linear-gradient(rgba(12,6,22,.5), rgba(12,6,22,.5));
+    background-size:400% 400%, 100% 100%;
+    background-position:0% 50%, 0 0;
+    background-clip:text, border-box;
+    -webkit-background-clip:text, border-box;
+    color:transparent;
+    background-origin:border-box, border-box;
+    animation:border-flow 7s ease-in-out infinite, cta-text-flow 7s ease-in-out infinite;
+  }
 
-    .game-choice-btn {
-      background: rgba(255,255,255,0.05);
-      border: 2px solid rgba(0,255,255,0.4);
-      border-radius: 14px;
-      color: cyan;
-      font-family: Arial, sans-serif;
-      font-size: 0.85rem;
-      font-weight: bold;
-      letter-spacing: 1px;
-      padding: 18px 24px;
-      cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      min-width: 90px;
-    }
-    .game-choice-btn:hover {
-      background: rgba(0,255,255,0.15);
-      border-color: cyan;
-      box-shadow: 0 0 20px rgba(0,255,255,0.4);
-    }
-    .game-choice-btn .choice-icon {
-      font-size: 1.8rem;
-    }
+  @keyframes cta-text-flow{
+    0%{ background-position:0% 50%, 0 0; }
+    50%{ background-position:100% 50%, 0 0; }
+    100%{ background-position:0% 50%, 0 0; }
+  }
 
-    #gameMenuClose {
-      background: none;
-      border: none;
-      color: rgba(255,255,255,0.4);
-      font-size: 0.8rem;
-      cursor: pointer;
-      letter-spacing: 1px;
-    }
-    #gameMenuClose:hover { color: #ff4444; }
+  .cta::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:-1;
+    background:linear-gradient(100deg, #ffd27a, #ff9e57, #ff3d7f, #ff6fa8, #ff9e57, #ffd27a);
+    background-size:400% 400%;
+    animation:gradient-flow 7s ease-in-out infinite;
+    opacity:0;
+    transform:scale(.85);
+    transition:opacity .35s ease, transform .45s cubic-bezier(.34,1.56,.64,1);
+  }
 
-    /* ── Snake ── */
-    #snakeCanvas {
-      border: 1px solid rgba(0,255,255,0.3);
-      border-radius: 8px;
-      display: block;
-    }
+  .cta:hover, .cta:focus-visible{
+    color:#1a0b12;
+    -webkit-text-fill-color:#1a0b12;
+    background-image:none;
+    -webkit-background-clip:border-box;
+    background-clip:border-box;
+    border-color:transparent;
+    transform:translateY(-3px) scale(1.04);
+  }
 
-    #snakeMsg {
-      color: cyan;
-      font-size: 0.8rem;
-      opacity: 0.7;
-      letter-spacing: 1px;
-    }
+  .cta:hover::before, .cta:focus-visible::before{
+    opacity:1;
+    transform:scale(1);
+  }
 
-    .replay-btn {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      background: rgba(0,255,255,0.08);
-      border: 2px solid cyan;
-      border-radius: 30px;
-      color: cyan;
-      font-size: 0.95rem;
-      font-family: Arial, sans-serif;
-      font-weight: bold;
-      letter-spacing: 1px;
-      padding: 8px 22px;
-      cursor: pointer;
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
-      transition: background 0.15s, box-shadow 0.15s;
-      box-shadow: 0 0 10px rgba(0,255,255,0.2);
-    }
-    .replay-btn:hover, .replay-btn:active {
-      background: rgba(0,255,255,0.22);
-      box-shadow: 0 0 22px rgba(0,255,255,0.5);
-    }
-    .replay-btn svg { width: 20px; height: 20px; fill: cyan; }
+  .cta:active{ transform:translateY(-1px) scale(1.01); }
 
-    #dpad {
-      display: none;
-      grid-template-columns: repeat(3, 52px);
-      grid-template-rows: repeat(3, 52px);
-      gap: 4px;
-      margin-top: 4px;
-    }
-    #dpad.touch-visible { display: grid; }
+  @media (max-width:480px){
+    .cta{ padding:.85em 1.6em; font-size:.7rem; }
+  }
 
-    .dpad-btn {
-      background: rgba(255,255,255,0.07);
-      border: 2px solid rgba(0,255,255,0.4);
-      border-radius: 10px;
-      color: cyan;
-      font-size: 1.3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-      transition: background 0.1s, box-shadow 0.1s;
-    }
-    .dpad-btn:active {
-      background: rgba(0,255,255,0.25);
-      box-shadow: 0 0 14px rgba(0,255,255,0.5);
-    }
-
-    /* ── Rat game ── */
-    #ratGrid {
-      display: grid;
-      grid-template-columns: repeat(3, 90px);
-      grid-template-rows: repeat(3, 90px);
-      gap: 8px;
-    }
-
-    .rat-cell {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(0,255,255,0.15);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.4rem;
-      cursor: pointer;
-      transition: background 0.1s, box-shadow 0.1s, border-color 0.1s;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-      position: relative;
-    }
-
-    .rat-cell.has-rat {
-      background: rgba(255,80,0,0.12);
-      border-color: #ff5500;
-      box-shadow: 0 0 14px rgba(255,80,0,0.35);
-      animation: ratPulse 0.3s ease-out;
-    }
-
-    @keyframes ratPulse {
-      0%   { transform: scale(0.7); opacity: 0.5; }
-      60%  { transform: scale(1.1); }
-      100% { transform: scale(1);   opacity: 1; }
-    }
-
-    .rat-cell.hit {
-      background: rgba(0,255,100,0.18);
-      border-color: #00ff64;
-      box-shadow: 0 0 18px rgba(0,255,100,0.5);
-    }
-
-    .rat-cell.missed {
-      background: rgba(255,0,0,0.15);
-      border-color: #ff2222;
-    }
-
-    /* barre de progression */
-    .rat-timer-bar {
-      width: 100%;
-      height: 5px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .rat-timer-fill {
-      height: 100%;
-      background: #ff5500;
-      border-radius: 3px;
-      transition: width linear;
-      width: 100%;
-    }
-
-    #ratMsg {
-      color: cyan;
-      font-size: 0.8rem;
-      opacity: 0.7;
-      letter-spacing: 1px;
-    }
-
-    #ratCoins {
-      color: white;
-      font-size: 0.85rem;
-      opacity: 0.8;
-    }
-
-    /* ── Tetris ── */
-    #tetrisWrap {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-    #tetrisCanvas {
-      border: 1px solid rgba(0,255,255,0.3);
-      border-radius: 8px;
-      display: block;
-    }
-    #tetrisSide {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 80px;
-    }
-    .tetris-panel {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(0,255,255,0.2);
-      border-radius: 10px;
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-    .tetris-panel-label {
-      color: rgba(0,255,255,0.6);
-      font-size: 0.65rem;
-      letter-spacing: 2px;
-    }
-    .tetris-panel-value {
-      color: white;
-      font-size: 1.1rem;
-      font-weight: bold;
-    }
-    #nextCanvas {
-      border: 1px solid rgba(0,255,255,0.15);
-      border-radius: 6px;
-    }
-    #tetrisMsg {
-      color: cyan;
-      font-size: 0.8rem;
-      opacity: 0.7;
-      letter-spacing: 1px;
-    }
-    #tetrisDpad {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      margin-top: 4px;
-    }
-    #tetrisDpad.touch-visible { display: flex; }
-    #tetrisDpadRow { display: flex; gap: 4px; }
-    .tdpad-btn {
-      background: rgba(255,255,255,0.07);
-      border: 2px solid rgba(0,255,255,0.4);
-      border-radius: 10px;
-      color: cyan;
-      font-size: 1.1rem;
-      width: 52px;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-      transition: background 0.1s;
-    }
-    .tdpad-btn:active { background: rgba(0,255,255,0.25); }
-    .tdpad-rotate { font-size: 0.7rem; font-weight: bold; letter-spacing: 0.5px; }
-
-    /* ── Vidéo ── */
-    #videoModal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #0a0f1e;
-      border: 2px solid cyan;
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(0,255,255,0.4);
-      z-index: 100;
-      padding: 16px;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-    #videoModal.open { display: flex; }
-
-    #videoHeader {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    #videoTitle {
-      color: cyan;
-      font-size: 1rem;
-      font-weight: bold;
-      letter-spacing: 2px;
-    }
-
-    #videoClose {
-      background: none;
-      border: none;
-      color: cyan;
-      font-size: 1.2rem;
-      cursor: pointer;
-      line-height: 1;
-      padding: 0 4px;
-    }
-    #videoClose:hover { color: #ff4444; }
-
-    #videoPlayer {
-      border: 1px solid rgba(0,255,255,0.3);
-      border-radius: 8px;
-      display: block;
-      max-width: 480px;
-      width: 100%;
-      outline: none;
-    }
-  </style>
+  @media (max-width:480px){
+    .countdown{ gap:8px; }
+    main{ padding-bottom:2vh; }
+  }
+</style>
 </head>
 <body>
 
-  <h1>CIAO NOGEMA</h1>
-  <div id="countdown"></div>
+  <div class="bg"></div>
+  <div class="bg-overlay"></div>
 
-  <div class="btn-row">
+  <main>
+    <h1 class="title">GTA VI RELEASE COUNTDOWN</h1>
 
-    <!-- Bouton Son -->
-    <button class="icon-btn" id="soundBtn" title="Activer le son">
-      <svg id="iconOn" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
-        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-      </svg>
-      <svg id="iconOff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-      </svg>
-    </button>
-
-    <!-- Bouton Manette → menu de choix -->
-    <button class="icon-btn" id="gameBtn" title="Jouer">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M21 6H3a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-      </svg>
-    </button>
-
-    <!-- Bouton Vidéo -->
-    <button class="icon-btn" id="videoBtn" title="Regarder l'edit gaming">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 2h10l4 4v2l4-2v12l-4-2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v14h12V7.83L12.17 4H4zm3 3l6 4-6 4V7z"/>
-      </svg>
-    </button>
-
-  </div>
-
-  <!-- ══ Menu choix de jeu ══ -->
-  <div id="gameMenuModal">
-    <div id="gameMenuTitle">🎮 CHOISIR UN JEU</div>
-    <div class="game-choice-row">
-      <button class="game-choice-btn" id="chooseSnake">
-        <span class="choice-icon">🐍</span>
-        SNAKE
-      </button>
-      <button class="game-choice-btn" id="chooseRat">
-        <span class="choice-icon">🐀</span>
-        LE RAT
-      </button>
-      <button class="game-choice-btn" id="chooseTetris">
-        <span class="choice-icon">🧱</span>
-        TETRIS
-      </button>
+    <div class="countdown" id="countdown">
+      <div class="unit"><div class="num" id="days">00</div><div class="label">Days</div></div>
+      <div class="unit"><div class="num" id="hours">00</div><div class="label">Hours</div></div>
+      <div class="unit"><div class="num" id="minutes">00</div><div class="label">Minutes</div></div>
+      <div class="unit"><div class="num" id="seconds">00</div><div class="label">Seconds</div></div>
     </div>
-    <button id="gameMenuClose">✕ FERMER</button>
-  </div>
 
-  <!-- ══ Fenêtre Snake ══ -->
-  <div id="snakeModal" class="game-modal">
-    <div class="modal-header">
-      <span class="modal-title">🐍 SNAKE GAMING</span>
-      <span class="modal-score" id="snakeScore">Score : 0</span>
-      <button class="modal-close" id="snakeClose">✕</button>
+    <p class="done-message" id="doneMessage">C'est le jour J. Bienvenue à Vice City.</p>
+
+    <div class="cta-row">
+      <a class="cta" href="https://store.rockstargames.com/game/buy-gta-vi" target="_blank" rel="noopener">Preorder</a>
+      <a class="cta" href="https://www.rockstargames.com/videos/rkoCtr1r" target="_blank" rel="noopener">Trailer 1</a>
+      <a class="cta" href="https://www.rockstargames.com/videos/cpys7u21" target="_blank" rel="noopener">Trailer 2</a>
     </div>
-    <canvas id="snakeCanvas" width="300" height="300"></canvas>
-    <div id="snakeMsg">ZQSD / flèches pour jouer</div>
+  </main>
 
-    <button class="replay-btn" id="replayBtn" aria-label="Rejouer">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-      </svg>
-      REJOUER
-    </button>
+<script>
+  // Release: Thursday 19 November 2026, 06:00 France time (CET, UTC+1) = 05:00 UTC
+  const target = new Date("2026-11-19T05:00:00Z").getTime();
 
-    <div id="dpad">
-      <div class="dpad-empty"></div>
-      <button class="dpad-btn" id="dUp"    aria-label="Haut">▲</button>
-      <div class="dpad-empty"></div>
-      <button class="dpad-btn" id="dLeft"  aria-label="Gauche">◀</button>
-      <div class="dpad-empty"></div>
-      <button class="dpad-btn" id="dRight" aria-label="Droite">▶</button>
-      <div class="dpad-empty"></div>
-      <button class="dpad-btn" id="dDown"  aria-label="Bas">▼</button>
-      <div class="dpad-empty"></div>
-    </div>
-  </div>
+  const daysEl = document.getElementById('days');
+  const hoursEl = document.getElementById('hours');
+  const minutesEl = document.getElementById('minutes');
+  const secondsEl = document.getElementById('seconds');
+  const countdownEl = document.getElementById('countdown');
+  const doneMessageEl = document.getElementById('doneMessage');
 
-  <!-- ══ Fenêtre Rat ══ -->
-  <div id="ratModal" class="game-modal">
-    <div class="modal-header">
-      <span class="modal-title">🐀 LE RAT ÇA COÛTE</span>
-      <span class="modal-score" id="ratCoins">🪙 0</span>
-      <button class="modal-close" id="ratClose">✕</button>
-    </div>
-    <div class="rat-timer-bar">
-      <div class="rat-timer-fill" id="ratTimerFill"></div>
-    </div>
-    <div id="ratGrid"></div>
-    <div id="ratMsg">Clique sur le rat !</div>
+  function pad(n){ return String(n).padStart(2,'0'); }
 
-    <button class="replay-btn" id="ratReplayBtn" aria-label="Rejouer">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-      </svg>
-      REJOUER
-    </button>
-  </div>
+  function tick(){
+    const now = Date.now();
+    const diff = target - now;
 
-  <!-- ══ Fenêtre Tetris ══ -->
-  <div id="tetrisModal" class="game-modal">
-    <div class="modal-header">
-      <span class="modal-title">🧱 TETRIS</span>
-      <span class="modal-score" id="tetrisScoreHeader">Score : 0</span>
-      <button class="modal-close" id="tetrisClose">✕</button>
-    </div>
-    <div id="tetrisWrap">
-      <canvas id="tetrisCanvas" width="200" height="400"></canvas>
-      <div id="tetrisSide">
-        <div class="tetris-panel">
-          <span class="tetris-panel-label">SCORE</span>
-          <span class="tetris-panel-value" id="tetrisScore">0</span>
-        </div>
-        <div class="tetris-panel">
-          <span class="tetris-panel-label">NIVEAU</span>
-          <span class="tetris-panel-value" id="tetrisLevel">1</span>
-        </div>
-        <div class="tetris-panel">
-          <span class="tetris-panel-label">LIGNES</span>
-          <span class="tetris-panel-value" id="tetrisLines">0</span>
-        </div>
-        <div class="tetris-panel">
-          <span class="tetris-panel-label">SUIVANT</span>
-          <canvas id="nextCanvas" width="80" height="80"></canvas>
-        </div>
-      </div>
-    </div>
-    <div id="tetrisMsg">Flèches / ZQSD pour jouer</div>
-    <button class="replay-btn" id="tetrisReplayBtn" aria-label="Rejouer">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-      </svg>
-      REJOUER
-    </button>
-    <div id="tetrisDpad">
-      <button class="tdpad-btn tdpad-rotate" id="tdRotate">ROT</button>
-      <div id="tetrisDpadRow">
-        <button class="tdpad-btn" id="tdLeft">◀</button>
-        <button class="tdpad-btn" id="tdDown">▼</button>
-        <button class="tdpad-btn" id="tdRight">▶</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ Fenêtre Vidéo ══ -->
-  <div id="videoModal">
-    <div id="videoHeader">
-      <span id="videoTitle">🎬 EDIT GAMING</span>
-      <button id="videoClose">✕</button>
-    </div>
-    <video id="videoPlayer" width="480" controls>
-      <source src="rien" type="video/mp4">
-    </video>
-  </div>
-
-  <audio id="music" loop>
-    <source src="rien" type="audio/mpeg">
-  </audio>
-
-  <script>
-    /* ── Countdown ── */
-    const targetDate = new Date(2026, 4, 6, 18, 0, 0).getTime();
-    const timer = setInterval(() => {
-      const distance = targetDate - Date.now();
-      if (distance < 0) {
-        document.getElementById("countdown").innerHTML = "Terminé";
-        clearInterval(timer); return;
-      }
-      const d = Math.floor(distance / 86400000);
-      const h = Math.floor((distance / 3600000) % 24);
-      const m = Math.floor((distance / 60000) % 60);
-      const s = Math.floor((distance / 1000) % 60);
-      document.getElementById("countdown").innerHTML = `${d}j ${h}h ${m}m ${s}s`;
-    }, 1000);
-
-    /* ── Son ── */
-    const music    = document.getElementById("music");
-    const soundBtn = document.getElementById("soundBtn");
-    const iconOn   = document.getElementById("iconOn");
-    const iconOff  = document.getElementById("iconOff");
-    let playing = false;
-
-    function pauseMusic() {
-      if (playing) {
-        music.pause();
-        playing = false;
-        iconOn.style.display  = "none";
-        iconOff.style.display = "block";
-        soundBtn.classList.add("muted");
-        soundBtn.title = "Activer le son";
-      }
+    if(diff <= 0){
+      countdownEl.style.display = 'none';
+      doneMessageEl.style.display = 'block';
+      clearInterval(timer);
+      return;
     }
 
-    soundBtn.addEventListener("click", () => {
-      if (!playing) {
-        music.play(); playing = true;
-        iconOn.style.display  = "block";
-        iconOff.style.display = "none";
-        soundBtn.classList.remove("muted");
-        soundBtn.title = "Couper le son";
-      } else {
-        pauseMusic();
-      }
-    });
-
-    /* ── Vidéo ── */
-    const videoModal  = document.getElementById("videoModal");
-    const videoBtn    = document.getElementById("videoBtn");
-    const videoClose  = document.getElementById("videoClose");
-    const videoPlayer = document.getElementById("videoPlayer");
-
-    videoBtn.addEventListener("click", () => {
-      pauseMusic();
-      videoModal.classList.add("open");
-      videoPlayer.currentTime = 0;
-      videoPlayer.play();
-    });
-
-    videoClose.addEventListener("click", () => {
-      videoModal.classList.remove("open");
-      videoPlayer.pause();
-      videoPlayer.currentTime = 0;
-    });
-
-    /* ══════════════════════════════
-       MENU CHOIX DE JEU
-    ══════════════════════════════ */
-    const gameMenuModal = document.getElementById("gameMenuModal");
-    const gameBtn       = document.getElementById("gameBtn");
-    const chooseSnake   = document.getElementById("chooseSnake");
-    const chooseRat     = document.getElementById("chooseRat");
-    const gameMenuClose = document.getElementById("gameMenuClose");
-
-    gameBtn.addEventListener("click", () => {
-      gameMenuModal.classList.add("open");
-    });
-
-    gameMenuClose.addEventListener("click", () => {
-      gameMenuModal.classList.remove("open");
-    });
-
-    chooseSnake.addEventListener("click", () => {
-      gameMenuModal.classList.remove("open");
-      openSnake();
-    });
-
-    chooseRat.addEventListener("click", () => {
-      gameMenuModal.classList.remove("open");
-      openRat();
-    });
-
-    const chooseTetris = document.getElementById("chooseTetris");
-    chooseTetris.addEventListener("click", () => {
-      gameMenuModal.classList.remove("open");
-      openTetris();
-    });
-
-    /* ══════════════════════════════
-       SNAKE
-    ══════════════════════════════ */
-    const snakeModal = document.getElementById("snakeModal");
-    const snakeClose = document.getElementById("snakeClose");
-    const canvas     = document.getElementById("snakeCanvas");
-    const ctx        = canvas.getContext("2d");
-    const scoreEl    = document.getElementById("snakeScore");
-    const msgEl      = document.getElementById("snakeMsg");
-    const replayBtn  = document.getElementById("replayBtn");
-
-    const COLS = 20, ROWS = 20;
-    const CELL = canvas.width / COLS;
-    let snake, dir, nextDir, food, snakeScore, loop, alive;
-
-    function openSnake() {
-      snakeModal.classList.add("open");
-      initSnake();
-    }
-
-    function initSnake() {
-      snake     = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
-      dir       = {x:1,y:0};
-      nextDir   = {x:1,y:0};
-      snakeScore = 0;
-      alive     = true;
-      scoreEl.textContent     = "Score : 0";
-      msgEl.textContent       = "ZQSD / flèches pour jouer";
-      replayBtn.style.display = "none";
-      placeFood();
-      clearInterval(loop);
-      loop = setInterval(step, 130);
-    }
-
-    replayBtn.addEventListener("click",      () => { if (!alive) initSnake(); });
-    replayBtn.addEventListener("touchstart", e  => { e.preventDefault(); if (!alive) initSnake(); }, {passive:false});
-
-    function placeFood() {
-      do {
-        food = {x:Math.floor(Math.random()*COLS), y:Math.floor(Math.random()*ROWS)};
-      } while (snake.some(s => s.x===food.x && s.y===food.y));
-    }
-
-    function step() {
-      if (!alive) return;
-      dir = {...nextDir};
-      const head = {x:snake[0].x+dir.x, y:snake[0].y+dir.y};
-      if (head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS||snake.some(s=>s.x===head.x&&s.y===head.y)) {
-        alive = false;
-        clearInterval(loop);
-        msgEl.textContent       = "💀 GAME OVER";
-        replayBtn.style.display = "flex";
-        draw(); return;
-      }
-      snake.unshift(head);
-      if (head.x===food.x && head.y===food.y) {
-        snakeScore++;
-        scoreEl.textContent = "Score : " + snakeScore;
-        placeFood();
-      } else {
-        snake.pop();
-      }
-      draw();
-    }
-
-    function draw() {
-      ctx.fillStyle = "#0a0f1e";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.strokeStyle = "rgba(0,255,255,0.05)";
-      ctx.lineWidth = 0.5;
-      for (let i=0;i<=COLS;i++){ctx.beginPath();ctx.moveTo(i*CELL,0);ctx.lineTo(i*CELL,canvas.height);ctx.stroke();}
-      for (let j=0;j<=ROWS;j++){ctx.beginPath();ctx.moveTo(0,j*CELL);ctx.lineTo(canvas.width,j*CELL);ctx.stroke();}
-      ctx.fillStyle="#ff4444"; ctx.shadowColor="#ff4444"; ctx.shadowBlur=10;
-      ctx.fillRect(food.x*CELL+1,food.y*CELL+1,CELL-2,CELL-2);
-      ctx.shadowBlur=0;
-      snake.forEach((seg,i) => {
-        const ratio = i/snake.length;
-        if (i===0){ctx.fillStyle="cyan";ctx.shadowColor="cyan";ctx.shadowBlur=12;}
-        else{const g=Math.round(255-ratio*100);const b=Math.round(255-ratio*50);ctx.fillStyle=`rgb(0,${g},${b})`;ctx.shadowBlur=0;}
-        ctx.fillRect(seg.x*CELL+1,seg.y*CELL+1,CELL-2,CELL-2);
-      });
-      ctx.shadowBlur=0;
-      if (!alive){
-        ctx.fillStyle="rgba(0,0,0,0.55)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle="cyan"; ctx.font="bold 22px Arial"; ctx.textAlign="center";
-        ctx.fillText("GAME OVER",canvas.width/2,canvas.height/2-10);
-        ctx.font="14px Arial"; ctx.fillStyle="white";
-        ctx.fillText("Score : "+snakeScore,canvas.width/2,canvas.height/2+18);
-      }
-    }
-
-    function handleDir(input) {
-      switch(input){
-        case "up":    if(dir.y!==1)  nextDir={x:0,y:-1}; break;
-        case "down":  if(dir.y!==-1) nextDir={x:0,y:1};  break;
-        case "left":  if(dir.x!==1)  nextDir={x:-1,y:0}; break;
-        case "right": if(dir.x!==-1) nextDir={x:1,y:0};  break;
-      }
-    }
-
-    document.addEventListener("keydown", e => {
-      if (!snakeModal.classList.contains("open")) return;
-      switch(e.key){
-        case "z":case "Z":case "ArrowUp":    handleDir("up");    break;
-        case "s":case "S":case "ArrowDown":  handleDir("down");  break;
-        case "q":case "Q":case "ArrowLeft":  handleDir("left");  break;
-        case "d":case "D":case "ArrowRight": handleDir("right"); break;
-      }
-      if(["z","s","q","d","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
-    });
-
-    function bindDpad(id, direction) {
-      const btn = document.getElementById(id);
-      btn.addEventListener("touchstart", e=>{e.preventDefault();handleDir(direction);},{passive:false});
-      btn.addEventListener("mousedown",  e=>{e.preventDefault();handleDir(direction);});
-    }
-    bindDpad("dUp","up"); bindDpad("dDown","down"); bindDpad("dLeft","left"); bindDpad("dRight","right");
-
-    if (navigator.maxTouchPoints>0||'ontouchstart' in window) {
-      document.getElementById("dpad").classList.add("touch-visible");
-    }
-
-    snakeClose.addEventListener("click", () => {
-      snakeModal.classList.remove("open");
-      clearInterval(loop);
-    });
-
-    /* ══════════════════════════════
-       LE RAT ÇA COÛTE
-    ══════════════════════════════ */
-    const ratModal     = document.getElementById("ratModal");
-    const ratClose     = document.getElementById("ratClose");
-    const ratGrid      = document.getElementById("ratGrid");
-    const ratCoinsEl   = document.getElementById("ratCoins");
-    const ratMsgEl     = document.getElementById("ratMsg");
-    const ratReplayBtn = document.getElementById("ratReplayBtn");
-    const ratTimerFill = document.getElementById("ratTimerFill");
-
-    const RAT_DURATION  = 1000;   // ms pour cliquer
-    const RAT_MIN_DELAY = 600;    // délai min entre deux rats
-    const RAT_MAX_DELAY = 1800;   // délai max
-    const LIVES         = 3;
-
-    let ratCoins      = 0;
-    let ratLives      = LIVES;
-    let ratRunning    = false;
-    let ratTimeout    = null;
-    let ratKillTimer  = null;
-    let ratTimerAnim  = null;
-    let ratActiveCell = -1;
-    let cells         = [];
-
-    function buildRatGrid() {
-      ratGrid.innerHTML = "";
-      cells = [];
-      for (let i=0;i<9;i++){
-        const cell = document.createElement("div");
-        cell.className = "rat-cell";
-        cell.dataset.index = i;
-        cell.addEventListener("click",  () => onCellClick(i));
-        cell.addEventListener("touchstart", e => { e.preventDefault(); onCellClick(i); }, {passive:false});
-        ratGrid.appendChild(cell);
-        cells.push(cell);
-      }
-    }
-
-    function openRat() {
-      ratModal.classList.add("open");
-      initRat();
-    }
-
-    function initRat() {
-      ratCoins = 0; ratLives = LIVES; ratRunning = true;
-      ratCoinsEl.textContent       = "🪙 0";
-      ratMsgEl.textContent         = "Clique sur le rat !";
-      ratReplayBtn.style.display   = "none";
-      ratTimerFill.style.transition = "none";
-      ratTimerFill.style.width     = "100%";
-      buildRatGrid();
-      scheduleRat();
-    }
-
-    function scheduleRat() {
-      if (!ratRunning) return;
-      clearTimeout(ratTimeout);
-      const delay = RAT_MIN_DELAY + Math.random() * (RAT_MAX_DELAY - RAT_MIN_DELAY);
-      ratTimeout = setTimeout(showRat, delay);
-    }
-
-    function showRat() {
-      if (!ratRunning) return;
-      // choisir une case aléatoire différente de la précédente
-      let idx;
-      do { idx = Math.floor(Math.random()*9); } while (idx === ratActiveCell);
-      ratActiveCell = idx;
-      cells[idx].classList.add("has-rat");
-      cells[idx].textContent = "🐀";
-
-      // barre de progression
-      ratTimerFill.style.transition = "none";
-      ratTimerFill.style.width = "100%";
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          ratTimerFill.style.transition = `width ${RAT_DURATION}ms linear`;
-          ratTimerFill.style.width = "0%";
-        });
-      });
-
-      // timer de disparition
-      clearTimeout(ratKillTimer);
-      ratKillTimer = setTimeout(() => {
-        if (!ratRunning) return;
-        if (cells[ratActiveCell] && cells[ratActiveCell].classList.contains("has-rat")) {
-          missedRat(ratActiveCell);
-        }
-      }, RAT_DURATION);
-    }
-
-    function onCellClick(i) {
-      if (!ratRunning) return;
-
-      // Clic sur une mauvaise case pendant qu'un rat est visible → perd une vie
-      if (i !== ratActiveCell && ratActiveCell !== -1) {
-        clearTimeout(ratKillTimer);
-        // retire le rat de sa case
-        cells[ratActiveCell].classList.remove("has-rat");
-        cells[ratActiveCell].textContent = "";
-        // flash rouge sur la case cliquée
-        cells[i].classList.add("missed");
-        cells[i].textContent = "❌";
-        const prevActive = ratActiveCell;
-        ratActiveCell = -1;
-        ratTimerFill.style.transition = "none";
-        ratTimerFill.style.width = "100%";
-        ratLives--;
-        const livesStr = "❤️".repeat(ratLives) + "🖤".repeat(LIVES - ratLives);
-        ratMsgEl.textContent = ratLives > 0 ? `Mauvaise case ! ${livesStr}` : "";
-        setTimeout(() => {
-          if (cells[i]) { cells[i].classList.remove("missed"); cells[i].textContent = ""; }
-          if (ratLives <= 0) { endRat(); } else { scheduleRat(); }
-        }, 400);
-        return;
-      }
-
-      if (i !== ratActiveCell) return;
-      if (!cells[i].classList.contains("has-rat")) return;
-
-      clearTimeout(ratKillTimer);
-      cells[i].classList.remove("has-rat");
-      cells[i].classList.add("hit");
-      cells[i].textContent = "💰";
-      ratActiveCell = -1;
-      ratCoins++;
-      ratCoinsEl.textContent = "🪙 " + ratCoins;
-      ratMsgEl.textContent   = "+1 pièce !";
-
-      // reset barre
-      ratTimerFill.style.transition = "none";
-      ratTimerFill.style.width = "100%";
-
-      setTimeout(() => {
-        if (cells[i]) { cells[i].classList.remove("hit"); cells[i].textContent = ""; }
-        scheduleRat();
-      }, 300);
-    }
-
-    function missedRat(i) {
-      if (!ratRunning) return;
-      cells[i].classList.remove("has-rat");
-      cells[i].classList.add("missed");
-      cells[i].textContent = "💨";
-      ratActiveCell = -1;
-      ratLives--;
-      ratTimerFill.style.transition = "none";
-      ratTimerFill.style.width = "100%";
-
-      const livesStr = "❤️".repeat(ratLives) + "🖤".repeat(LIVES - ratLives);
-      ratMsgEl.textContent = ratLives > 0 ? `Raté ! ${livesStr}` : "";
-
-      setTimeout(() => {
-        if (cells[i]) { cells[i].classList.remove("missed"); cells[i].textContent = ""; }
-        if (ratLives <= 0) {
-          endRat();
-        } else {
-          scheduleRat();
-        }
-      }, 400);
-    }
-
-    function endRat() {
-      ratRunning = false;
-      clearTimeout(ratTimeout);
-      clearTimeout(ratKillTimer);
-      ratTimerFill.style.transition = "none";
-      ratTimerFill.style.width = "0%";
-      ratMsgEl.textContent         = "💀 GAME OVER — " + ratCoins + " pièce" + (ratCoins>1?"s":"") + " gagnée" + (ratCoins>1?"s":"") + " !";
-      ratReplayBtn.style.display   = "flex";
-    }
-
-    ratReplayBtn.addEventListener("click",      () => initRat());
-    ratReplayBtn.addEventListener("touchstart", e  => { e.preventDefault(); initRat(); }, {passive:false});
-
-    ratClose.addEventListener("click", () => {
-      ratModal.classList.remove("open");
-      ratRunning = false;
-      clearTimeout(ratTimeout);
-      clearTimeout(ratKillTimer);
-    });
-
-    /* ══════════════════════════════
-       TETRIS
-    ══════════════════════════════ */
-    const tetrisModal      = document.getElementById("tetrisModal");
-    const tetrisClose      = document.getElementById("tetrisClose");
-    const tetrisReplayBtn  = document.getElementById("tetrisReplayBtn");
-    const tCanvas          = document.getElementById("tetrisCanvas");
-    const tCtx             = tCanvas.getContext("2d");
-    const nCanvas          = document.getElementById("nextCanvas");
-    const nCtx             = nCanvas.getContext("2d");
-    const tetrisScoreEl    = document.getElementById("tetrisScore");
-    const tetrisScoreHdr   = document.getElementById("tetrisScoreHeader");
-    const tetrisLevelEl    = document.getElementById("tetrisLevel");
-    const tetrisLinesEl    = document.getElementById("tetrisLines");
-    const tetrisMsgEl      = document.getElementById("tetrisMsg");
-
-    const TC = 20;            // cell size px
-    const TCOLS = 10;
-    const TROWS = 20;
-
-    // Pièces Tetris (matrices 4x4)
-    const PIECES = [
-      { shape: [[1,1,1,1]],                         color: "#00f0f0" }, // I cyan
-      { shape: [[1,1],[1,1]],                        color: "#f0f000" }, // O jaune
-      { shape: [[0,1,0],[1,1,1]],                    color: "#a000f0" }, // T violet
-      { shape: [[1,0],[1,0],[1,1]],                  color: "#f0a000" }, // L orange
-      { shape: [[0,1],[0,1],[1,1]],                  color: "#0000f0" }, // J bleu
-      { shape: [[0,1,1],[1,1,0]],                    color: "#00f000" }, // S vert
-      { shape: [[1,1,0],[0,1,1]],                    color: "#f00000" }, // Z rouge
-    ];
-
-    let tBoard, tPiece, tNext, tScore, tLevel, tLines, tRunning, tOver, tDropTimer, tDropInterval;
-
-    function tRotate(matrix) {
-      return matrix[0].map((_, i) => matrix.map(row => row[i]).reverse());
-    }
-
-    function tNewPiece(def) {
-      return {
-        shape: def.shape.map(r => [...r]),
-        color: def.color,
-        x: Math.floor(TCOLS / 2) - Math.floor(def.shape[0].length / 2),
-        y: 0
-      };
-    }
-
-    function tRandomDef() { return PIECES[Math.floor(Math.random() * PIECES.length)]; }
-
-    function tCollides(piece, ox, oy, shape) {
-      shape = shape || piece.shape;
-      for (let r = 0; r < shape.length; r++) {
-        for (let c = 0; c < shape[r].length; c++) {
-          if (!shape[r][c]) continue;
-          const nx = piece.x + ox + c;
-          const ny = piece.y + oy + r;
-          if (nx < 0 || nx >= TCOLS || ny >= TROWS) return true;
-          if (ny >= 0 && tBoard[ny][nx]) return true;
-        }
-      }
-      return false;
-    }
-
-    function tLock() {
-      tPiece.shape.forEach((row, r) => {
-        row.forEach((v, c) => {
-          if (!v) return;
-          const y = tPiece.y + r;
-          if (y < 0) { tGameOver(); return; }
-          tBoard[y][tPiece.x + c] = tPiece.color;
-        });
-      });
-      tClearLines();
-      tPiece = tNewPiece(tNext);
-      tNext  = tRandomDef();
-      tDrawNext();
-      if (tCollides(tPiece, 0, 0)) { tGameOver(); }
-    }
-
-    function tClearLines() {
-      let cleared = 0;
-      for (let r = TROWS - 1; r >= 0; r--) {
-        if (tBoard[r].every(c => c)) {
-          tBoard.splice(r, 1);
-          tBoard.unshift(new Array(TCOLS).fill(0));
-          cleared++;
-          r++; // recheck same row index
-        }
-      }
-      if (cleared) {
-        const pts = [0, 100, 300, 500, 800];
-        tScore += (pts[cleared] || 800) * tLevel;
-        tLines += cleared;
-        tLevel  = Math.floor(tLines / 10) + 1;
-        tDropInterval = Math.max(80, 600 - (tLevel - 1) * 50);
-        tetrisScoreEl.textContent  = tScore;
-        tetrisScoreHdr.textContent = "Score : " + tScore;
-        tetrisLevelEl.textContent  = tLevel;
-        tetrisLinesEl.textContent  = tLines;
-        clearInterval(tDropTimer);
-        tDropTimer = setInterval(tDrop, tDropInterval);
-      }
-    }
-
-    function tDrop() {
-      if (!tRunning || tOver) return;
-      if (!tCollides(tPiece, 0, 1)) {
-        tPiece.y++;
-      } else {
-        tLock();
-      }
-      tDrawBoard();
-    }
-
-    function tGameOver() {
-      tOver = true; tRunning = false;
-      clearInterval(tDropTimer);
-      tetrisMsgEl.textContent         = "💀 GAME OVER";
-      tetrisReplayBtn.style.display   = "flex";
-      tDrawBoard();
-    }
-
-    function tDrawCell(ctx, x, y, color, size) {
-      size = size || TC;
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 6;
-      ctx.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-      // highlight
-      ctx.fillStyle = "rgba(255,255,255,0.18)";
-      ctx.shadowBlur = 0;
-      ctx.fillRect(x * size + 2, y * size + 2, size - 4, 3);
-      ctx.shadowBlur = 0;
-    }
-
-    function tGhostY() {
-      let gy = 0;
-      while (!tCollides(tPiece, 0, gy + 1)) gy++;
-      return tPiece.y + gy;
-    }
-
-    function tDrawBoard() {
-      // fond + grille
-      tCtx.fillStyle = "#0a0f1e";
-      tCtx.fillRect(0, 0, tCanvas.width, tCanvas.height);
-      tCtx.strokeStyle = "rgba(0,255,255,0.05)";
-      tCtx.lineWidth = 0.5;
-      for (let i = 0; i <= TCOLS; i++) {
-        tCtx.beginPath(); tCtx.moveTo(i * TC, 0); tCtx.lineTo(i * TC, tCanvas.height); tCtx.stroke();
-      }
-      for (let j = 0; j <= TROWS; j++) {
-        tCtx.beginPath(); tCtx.moveTo(0, j * TC); tCtx.lineTo(tCanvas.width, j * TC); tCtx.stroke();
-      }
-
-      // board
-      tBoard.forEach((row, r) => {
-        row.forEach((color, c) => {
-          if (color) tDrawCell(tCtx, c, r, color);
-        });
-      });
-
-      if (!tOver && tPiece) {
-        // ghost
-        const gy = tGhostY();
-        tPiece.shape.forEach((row, r) => {
-          row.forEach((v, c) => {
-            if (!v) return;
-            tCtx.fillStyle = "rgba(255,255,255,0.08)";
-            tCtx.fillRect((tPiece.x + c) * TC + 1, (gy + r) * TC + 1, TC - 2, TC - 2);
-          });
-        });
-
-        // pièce active
-        tPiece.shape.forEach((row, r) => {
-          row.forEach((v, c) => {
-            if (v) tDrawCell(tCtx, tPiece.x + c, tPiece.y + r, tPiece.color);
-          });
-        });
-      }
-
-      if (tOver) {
-        tCtx.fillStyle = "rgba(0,0,0,0.6)";
-        tCtx.fillRect(0, 0, tCanvas.width, tCanvas.height);
-        tCtx.fillStyle = "cyan";
-        tCtx.font = "bold 20px Arial";
-        tCtx.textAlign = "center";
-        tCtx.fillText("GAME OVER", tCanvas.width / 2, tCanvas.height / 2 - 12);
-        tCtx.fillStyle = "white";
-        tCtx.font = "13px Arial";
-        tCtx.fillText("Score : " + tScore, tCanvas.width / 2, tCanvas.height / 2 + 14);
-      }
-    }
-
-    function tDrawNext() {
-      nCtx.fillStyle = "#0a0f1e";
-      nCtx.fillRect(0, 0, nCanvas.width, nCanvas.height);
-      const NS = 16;
-      const offX = Math.floor((5 - tNext.shape[0].length) / 2);
-      const offY = Math.floor((5 - tNext.shape.length) / 2);
-      tNext.shape.forEach((row, r) => {
-        row.forEach((v, c) => {
-          if (v) {
-            nCtx.fillStyle = tNext.color;
-            nCtx.shadowColor = tNext.color;
-            nCtx.shadowBlur = 5;
-            nCtx.fillRect((offX + c) * NS + 1, (offY + r) * NS + 1, NS - 2, NS - 2);
-            nCtx.shadowBlur = 0;
-          }
-        });
-      });
-    }
-
-    function initTetris() {
-      tBoard    = Array.from({length: TROWS}, () => new Array(TCOLS).fill(0));
-      tScore    = 0; tLevel = 1; tLines = 0;
-      tRunning  = true; tOver = false;
-      tDropInterval = 600;
-      tetrisScoreEl.textContent  = "0";
-      tetrisScoreHdr.textContent = "Score : 0";
-      tetrisLevelEl.textContent  = "1";
-      tetrisLinesEl.textContent  = "0";
-      tetrisMsgEl.textContent    = "Flèches / ZQSD pour jouer";
-      tetrisReplayBtn.style.display = "none";
-      tNext  = tRandomDef();
-      tPiece = tNewPiece(tRandomDef());
-      tNext  = tRandomDef();
-      tDrawNext();
-      clearInterval(tDropTimer);
-      tDropTimer = setInterval(tDrop, tDropInterval);
-      tDrawBoard();
-    }
-
-    function openTetris() {
-      tetrisModal.classList.add("open");
-      initTetris();
-      if (navigator.maxTouchPoints > 0 || 'ontouchstart' in window) {
-        document.getElementById("tetrisDpad").classList.add("touch-visible");
-      }
-    }
-
-    tetrisClose.addEventListener("click", () => {
-      tetrisModal.classList.remove("open");
-      tRunning = false;
-      clearInterval(tDropTimer);
-    });
-
-    tetrisReplayBtn.addEventListener("click",      () => initTetris());
-    tetrisReplayBtn.addEventListener("touchstart", e  => { e.preventDefault(); initTetris(); }, {passive:false});
-
-    // Clavier Tetris
-    document.addEventListener("keydown", e => {
-      if (!tetrisModal.classList.contains("open") || tOver || !tRunning) return;
-      switch(e.key) {
-        case "ArrowLeft":  case "q": case "Q":
-          if (!tCollides(tPiece, -1, 0)) { tPiece.x--; tDrawBoard(); }
-          e.preventDefault(); break;
-        case "ArrowRight": case "d": case "D":
-          if (!tCollides(tPiece, 1, 0))  { tPiece.x++; tDrawBoard(); }
-          e.preventDefault(); break;
-        case "ArrowDown":  case "s": case "S":
-          if (!tCollides(tPiece, 0, 1)) { tPiece.y++; } else { tLock(); }
-          tDrawBoard(); e.preventDefault(); break;
-        case "ArrowUp": case "z": case "Z":
-          const rotated = tRotate(tPiece.shape);
-          if (!tCollides(tPiece, 0, 0, rotated)) { tPiece.shape = rotated; }
-          else if (!tCollides(tPiece, 1, 0, rotated)) { tPiece.shape = rotated; tPiece.x++; }
-          else if (!tCollides(tPiece, -1, 0, rotated)) { tPiece.shape = rotated; tPiece.x--; }
-          tDrawBoard(); e.preventDefault(); break;
-        case " ":
-          while (!tCollides(tPiece, 0, 1)) tPiece.y++;
-          tLock(); tDrawBoard(); e.preventDefault(); break;
-      }
-    });
-
-    // D-pad Tetris tactile
-    function bindTdpad(id, action) {
-      const btn = document.getElementById(id);
-      if (!btn) return;
-      btn.addEventListener("touchstart", e => { e.preventDefault(); action(); }, {passive:false});
-      btn.addEventListener("mousedown",  e => { e.preventDefault(); action(); });
-    }
-
-    bindTdpad("tdLeft",   () => { if (tRunning && !tOver && !tCollides(tPiece,-1,0)) { tPiece.x--; tDrawBoard(); }});
-    bindTdpad("tdRight",  () => { if (tRunning && !tOver && !tCollides(tPiece,1,0))  { tPiece.x++; tDrawBoard(); }});
-    bindTdpad("tdDown",   () => {
-      if (!tRunning || tOver) return;
-      if (!tCollides(tPiece, 0, 1)) { tPiece.y++; } else { tLock(); }
-      tDrawBoard();
-    });
-    bindTdpad("tdRotate", () => {
-      if (!tRunning || tOver) return;
-      const rotated = tRotate(tPiece.shape);
-      if (!tCollides(tPiece, 0, 0, rotated))       { tPiece.shape = rotated; }
-      else if (!tCollides(tPiece, 1, 0, rotated))  { tPiece.shape = rotated; tPiece.x++; }
-      else if (!tCollides(tPiece, -1, 0, rotated)) { tPiece.shape = rotated; tPiece.x--; }
-      tDrawBoard();
-    });
-
-  </script>
-
+    const days = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor((diff / (1000*60*60)) % 24);
+    const minutes = Math.floor((diff / (1000*60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    daysEl.textContent = pad(days);
+    hoursEl.textContent = pad(hours);
+    minutesEl.textContent = pad(minutes);
+    secondsEl.textContent = pad(seconds);
+  }
+
+  tick();
+  const timer = setInterval(tick, 1000);
+</script>
 </body>
 </html>
