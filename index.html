@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compte à rebours — GTA VI</title>
+<title>GTA VI - Release countdown</title>
 <meta name="description" content="Compte à rebours avant la sortie de Grand Theft Auto VI, le 19 novembre 2026.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -104,19 +104,15 @@
   .countdown{
     display:grid;
     grid-template-columns:repeat(4, 1fr);
-    gap:clamp(10px, 2.4vw, 26px);
     width:100%;
     max-width:640px;
-  }
-
-  .unit{
     background:var(--panel-bg);
     border:1px solid rgba(255,158,87,.4);
-    border-radius:14px;
+    border-radius:18px;
     backdrop-filter:blur(8px);
     -webkit-backdrop-filter:blur(8px);
-    padding:clamp(14px,3vw,24px) 6px;
     animation:border-flow 7s ease-in-out infinite;
+    overflow:hidden;
   }
 
   @keyframes border-flow{
@@ -133,6 +129,14 @@
       box-shadow:0 0 18px rgba(255,158,87,.18), inset 0 0 20px rgba(255,158,87,.06);
     }
   }
+
+  .unit{
+    padding:clamp(16px,3.4vw,28px) 6px;
+    text-align:center;
+    border-left:1px solid rgba(255,255,255,.14);
+  }
+
+  .unit:first-child{ border-left:none; }
 
   .unit .num{
     font-family:'Bebas Neue', sans-serif;
@@ -248,7 +252,8 @@
   }
 
   @media (max-width:480px){
-    .countdown{ gap:8px; }
+    .countdown{ border-radius:14px; }
+    .unit{ padding:14px 2px; }
     main{ padding-bottom:2vh; }
   }
 </style>
